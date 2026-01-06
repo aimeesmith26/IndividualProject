@@ -11,7 +11,7 @@ ylim([-1.6, 0]);
 
 % Marking the different values of D on the diagram
 xline(D, '--b', 'LineWidth', 2);
-
+plot(2*sqrt(2),atan(-2*sqrt(2)),'mx','MarkerSize',15,'LineWidth',2)
 plot(0, 0, 'r-*', 'MarkerFaceColor','r', 'MarkerSize',15, 'LineWidth',2);
 
 % Finding and plotting the equilibrium angle theta for saturated drag
@@ -30,3 +30,4 @@ ylabel('\theta');
 
 legend([plotsaturated, plotpositive],'Saturated Drag', 'Quadratic Drag', 'Location', 'best');
 grid on;
+
