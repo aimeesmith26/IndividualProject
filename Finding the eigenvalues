@@ -1,0 +1,20 @@
+Dvals = [0,1,2,3,4];
+
+s_sol = zeros(size(Dvals));
+
+for k = 1:length(Dvals)
+    D = Dvals(k);
+    f = @(x) x.^4 + (D.^2).*x.^2./(1+x).^2 - 1;
+    s_sol(k) = fzero(f, 0.5);
+end
+
+for i = 1:length(Dvals)
+    D = Dvals(i);
+    s = s_sol(i);
+
+    J = [  -D/(1+s), 2;
+          -s^2,-D/(1+s)^2 ];
+
+    eigvalues = eig(J)
+
+end
