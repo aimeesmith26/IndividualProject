@@ -1,0 +1,32 @@
+D = 0:4;
+
+% Finding and plotting equilibrium angle theta for quadratic drag
+positivetheta = atan(-D);
+
+figure;
+plotpositive=plot(D, positivetheta, 'm-o',  'MarkerFaceColor','m', 'MarkerSize',10, 'LineWidth',2);
+hold on;
+
+ylim([-1.6, 0]);
+
+% Marking the different values of D on the diagram
+xline(D, '--b', 'LineWidth', 2);
+
+plot(0, 0, 'r-*', 'MarkerFaceColor','r', 'MarkerSize',15, 'LineWidth',2);
+
+% Finding and plotting the equilibrium angle theta for saturated drag
+theta_eq = zeros(size(D));
+for k = 1:length(D)
+    Dk = D(k);
+    f = @(s) s.^4 + (Dk.^2).*s.^2./(1+s).^2 - 1;
+    s_eq = fzero(f, 0.5);
+    theta_eq(k) = atan2(-Dk*s_eq/(1+s_eq), s_eq^2);
+end
+plotsaturated=plot(D, theta_eq, 'r-o', 'MarkerFaceColor','r', 'MarkerSize',10, 'LineWidth',2);
+
+set(gca,'FontSize',20);
+xlabel('D');
+ylabel('\theta');
+
+legend([plotsaturated, plotpositive],'Saturated Drag', 'Quadratic Drag', 'Location', 'best');
+grid on;
