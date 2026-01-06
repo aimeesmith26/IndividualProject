@@ -1,0 +1,81 @@
+clear; clc; close all;
+
+for D = 0:4
+
+    % Define the system
+    system = @(t, y) glider(t, y, D);
+    
+    % Create meshgrid for vector field
+    theta_vals = linspace(-pi, pi, 20);
+    s_vals = linspace(0.1, 2.5, 18);
+    
+    [Th, S] = meshgrid(theta_vals, s_vals);
+    
+    % Compute derivatives 
+    dTh = (S.^2 - cos(Th)) ./ S;     
+    dS  = -sin(Th) - D .* (S./(1+S));
+    
+    % Normalise for consistent arrow length 
+    magnitude = sqrt(dTh.^2 + dS.^2);
+
+    dx = theta_vals(2) - theta_vals(1);
+    dy = s_vals(2) - s_vals(1);
+    scale_factor = 1.2 * min(dx, dy);
+
+    dTh_norm = dTh ./ magnitude * scale_factor;
+    dS_norm  = dS ./ magnitude * scale_factor;
+
+     % Convert to cylindrical coordinates 
+    X = cos(Th);
+    Y = sin(Th);
+    Z = S; 
+
+    % Convert derivatives to Cartesian coordinates 
+    dX = -sin(Th) .* dTh_norm;
+    dY = cos(Th) .* dTh_norm; 
+    dZ = dS_norm;
+
+    figure; hold on;
+
+    quiver3(X, Y, Z, dX, dY, dZ, 'b', 'LineWidth', 1.2, 'MaxHeadSize', 0.9, 'AutoScale', 'off');
+
+    % Initial Conditions
+    initial = [0 1 ; 0.5 1.5; 1.5 2];
+    tspan = [0 20];
+
+    h_init = plot3(cos(initial(:,1)), sin(initial(:,1)), initial(:,2), 'kx', 'MarkerSize', 12, 'LineWidth', 2);
+
+    f = @(s) s.^4 + (D.^2).*s.^2./(1+s).^2 - 1;
+    s_eq = fzero(f, 0.5);
+    theta_eq = atan2(-D*s_eq/(1+s_eq), s_eq^2);
+    h_eq = plot3(cos(theta_eq), sin(theta_eq), s_eq, 'mx', 'MarkerSize', 12, 'LineWidth', 2);
+    
+    for i = 1:size(initial, 1)
+        y0 = initial(i, :);
+        [t, y] = ode45(system, tspan, y0);
+        % Convert trajectory to cylindrical coordinates
+        xtraj = cos(y(:,1));
+        ytraj = sin(y(:,1));
+        ztraj = y(:,2);
+        plot3(xtraj, ytraj, ztraj, 'r', 'LineWidth', 2.5);
+    end
+
+    legend([h_init, h_eq], 'Initial Conditions', 'Equilibrium Point', 'Location', 'best');
+    
+    set(gca, 'FontSize', 20);
+    xlabel('cos(\theta)');
+    ylabel('sin(\theta)');
+    zlabel('s');
+    view(3);
+    axis equal;
+    grid on;
+    hold off;
+end
+
+function dydt = glider(~, y, D)   
+    theta = y(1);
+    s = y(2);    
+    dth_dt = (s^2 - cos(theta)) / max(s, 1e-6);   
+    ds_dt = -sin(theta) - D * (s/(1+s));    
+    dydt = [dth_dt; ds_dt];
+end
