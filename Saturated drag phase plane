@@ -1,0 +1,70 @@
+clear; clc; close all;
+
+for D = 0:4
+
+    system = @(t, y) glider(t, y, D);
+    
+    theta_vals = linspace(-pi, pi, 20);
+    s_vals = linspace(0.1, 2.5, 18);
+    
+    [Th, S] = meshgrid(theta_vals, s_vals);
+    
+    dTh = (S.^2 - cos(Th)) ./ S;     
+    dS  = -sin(Th) - D .* (S./(1+S));
+    
+    magnitude = sqrt(dTh.^2 + dS.^2);
+
+    dx = theta_vals(2) - theta_vals(1);
+    dy = s_vals(2) - s_vals(1);
+    scale_factor = 0.9 * min(dx, dy);
+
+    dTh_norm = dTh ./ magnitude * scale_factor;
+    dS_norm  = dS ./ magnitude * scale_factor;
+
+    figure; hold on;
+    quiver(Th, S, dTh_norm, dS_norm, 'b', 'LineWidth', 1.2, 'MaxHeadSize', 0.8, 'AutoScale', 'off');
+    
+   
+    initial = [0 1;    
+               0.5 1.5;
+               -1 2];
+
+    tspan = [0 20];
+
+    h_init = plot(initial(:,1), initial(:,2), 'kx', 'MarkerSize', 12, 'LineWidth', 2);
+    
+    f = @(s) s.^4 + (D.^2).*s.^2./(1+s).^2 - 1;
+    s_eq = fzero(f, 0.5);
+    theta_eq = atan2(-D*s_eq/(1+s_eq), s_eq^2);
+
+
+   
+    for i = 1:size(initial, 1)
+        y0 = initial(i, :);
+        [t, y] = ode45(system, tspan, y0);
+        plot(y(:,1), y(:,2), 'r', 'LineWidth', 2.5);
+    end
+
+    h_eq = plot(theta_eq, s_eq, 'mo', 'MarkerFaceColor','m', 'MarkerSize',10);
+
+
+
+    legend([h_init, h_eq], {'Initial Conditions', 'Equilibrium'},'Location','northeast');
+
+    set(gca, 'FontSize', 20);
+    xlabel('\theta');
+    ylabel('s');
+    axis([-pi pi 0.1 2.5]);
+    xticks([-pi, -pi/2, 0, pi/2, pi]);
+    xticklabels({'-\pi', '-\pi/2', '0', '\pi/2', '\pi'});
+    grid on;
+    hold off;
+end
+
+function dydt = glider(~, y, D)
+    theta = y(1);
+    s = y(2);
+    dth_dt = (s^2 - cos(theta)) / s;
+    ds_dt  = -sin(theta) - D * (s/(1+s));
+    dydt = [dth_dt; ds_dt];
+end
